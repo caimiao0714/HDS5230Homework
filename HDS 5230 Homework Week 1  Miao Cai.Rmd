@@ -1,0 +1,143 @@
+---
+title: "HDS 5230 High performance computing"
+subtitle: "Homework Week 1"
+author: "Miao Cai^[Department of Epidemiology and Biostatistics, Saint Louis University. Email address [miao.cai@slu.edu](miao.cai@slu.edu)]"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+Questions
+
+**1) Load the data.table package, then convert this dataframe into a data.table. Save the resulting data.table as `gapminder_dt`.**
+
+```{r}
+library(gapminder)
+library(data.table)
+data(gapminder)
+gapminder_dt = as.data.table(gapminder)
+```
+
+**2) Practicing using the i and j arguments to subset the data.table by writing the code to get the following subsets:**
+
+  a. Only the first 30 rows
+```{r}
+gapminder_dt[1:30]
+```
+
+  b. Only rows where year is 1952
+```{r}
+gapminder_dt[year == 1952]
+```
+  
+  c. Only the rows where continent is Africa
+```{r}
+gapminder_dt[continent == "Africa"]
+```
+  
+  d. Only rows where the year is 2007, with only the country column and the lifeExp column.
+```{r}
+gapminder_dt[year == 2007, .(country, lifeExp)]
+```
+  
+  
+
+
+
+
+
+**3) Now you will need to figure out what code to write to answer the following questions:**
+
+  a. Which 5 countries have the highest population in 1952? What about 1987? What about 2007?
+```{r}
+(setorder(gapminder_dt[year == 1952, .(country, pop)], -pop)[1:5])
+(setorder(gapminder_dt[year == 1987, .(country, pop)], -pop)[1:5])
+(setorder(gapminder_dt[year == 2007, .(country, pop)], -pop)[1:5])
+```
+
+  b. Which 5 countries have the lowest population in 1952? What about 1987? What about 2007?
+  
+```{r}
+(setorder(gapminder_dt[year == 1952, .(country, pop)], pop)[1:5])
+(setorder(gapminder_dt[year == 1987, .(country, pop)], pop)[1:5])
+(setorder(gapminder_dt[year == 2007, .(country, pop)], pop)[1:5])
+```
+
+  
+  c. Which 5 countries have the highest lifeExp in 1952? What about 1987? What about 2007?
+  
+```{r}
+(setorder(gapminder_dt[year == 1952, .(country, lifeExp)], -lifeExp)[1:5])
+(setorder(gapminder_dt[year == 1987, .(country, lifeExp)], -lifeExp)[1:5])
+(setorder(gapminder_dt[year == 2007, .(country, lifeExp)], -lifeExp)[1:5])
+```
+
+  
+  d. Which 5 countries have the lowest lifeExp in 1952? What about 1987? What about 2007?
+  
+```{r}
+(setorder(gapminder_dt[year == 1952, .(country, lifeExp)], lifeExp)[1:5])
+(setorder(gapminder_dt[year == 1987, .(country, lifeExp)], lifeExp)[1:5])
+(setorder(gapminder_dt[year == 2007, .(country, lifeExp)], lifeExp)[1:5])
+```
+ 
+  e. Calculate the average life expectancy by country across all years for only countries in Asia. Which Country in Asia has the highest and lowest average life expectancy?
+```{r}
+# The highest average life expectancy country in Asia
+(setorder(gapminder_dt[continent == "Asia", 
+                       .(mean_lifeExp = mean(lifeExp)), 
+                       by = country], 
+          -mean_lifeExp))[1]
+
+# The lowest average life expectancy country in Asia
+(setorder(gapminder_dt[continent == "Asia", 
+                       .(mean_lifeExp = mean(lifeExp)), 
+                       by = country], 
+          mean_lifeExp))[1]
+```
+
+  f. Create a new column that is pop*gdpPercap. Which countries have the highest value for this column?
+  
+```{r}
+options(scipen = 999)
+# Top ten countries
+(setorder(gapminder_dt[, .(country, pop_gdp = pop*gdpPercap)], -pop_gdp)[1:10])
+```
+
+
+
+
+
+
+**4) What is the correlation between gdpPercap and Life expectancy? Using your data.table object, call the correlation function from the j argument (instead of doing it the ‘base’ R way).**
+
+```{r}
+gapminder_dt[, cor(gdpPercap, lifeExp)]
+```
+
+
+
+
+
+
+**5) HARDER QUESTION: I want you to create a linear model estimating the slope between year and lifeExp for each country individually, then extract the slopes/country names and save the resulting table. This resulting table should have one row for every country, with two variables (country and slope). It may be helpful to start by just fitting a model for the whole dataset and figuring out how to extract the slope from that model.**
+
+a. Which 5 countries have the highest average increase in life expectancy over time (biggest slope)?
+
+```{r}
+q5 = gapminder_dt[, .(increase = lm(lifeExp ~ year)$coefficients), 
+                  by = country]
+
+setorder(q5, -increase)[1:5]
+```
+
+
+b. Which 5 countries have the lowest average increase in life expectancy over time (biggest slope)?
+
+```{r}
+setorder(q5, increase)[1:5]
+```
+

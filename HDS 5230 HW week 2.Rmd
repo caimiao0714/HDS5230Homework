@@ -1,0 +1,97 @@
+---
+title: "HDS 5230 High performance computing"
+subtitle: "Homework Week 2"
+author: "Miao Cai^[Department of Epidemiology and Biostatistics, Saint Louis University. Email address [miao.cai@slu.edu](miao.cai@slu.edu)]"
+date: "`r Sys.Date()`"
+output: pdf_document
+link-citations: yes
+linkcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+You will use these datasets to answer some questions listed below. You must be careful to think about what the appropriate denominator is for each question. As you code the answers, be mindful to use the ‘high performance’ coding approaches in data.table.
+
+```{r readdata}
+library(data.table)
+data_path = "healthcare2/"
+csv_files = list.files(path = data_path, pattern = "*.csv")
+
+readallcsv = function(i){
+  assign(
+    gsub(".csv", "", csv_files[i]), 
+    fread(paste0(data_path, csv_files[i])),
+    envir = parent.frame()
+  )
+}
+
+for (i in seq_along(csv_files))  readallcsv(i)
+```
+
+
+1) Are men more likely to die than women in this group of patients? Assume people without a date of death in the mortality table are still alive.
+
+**Here I recode all patients without a `Gender` to `other`.**
+
+```{r}
+Patient[!Gender %in% c("female", "male"), Gender := "other"]
+q1 = Mortality[Patient, on = "PatientID"]
+q1[, .(death_percent = sum(!is.na(DateOfDeath))/.N), by = Gender][order(-death_percent)]
+```
+
+**According to the returned data, it seems that males do have a little bit higher chance to die than women in this group of patients, although the difference is nominal.**
+
+2) I am interested to know if there are patterns in the disease groups across gender. For every patient with at least one outpatient visit, identify if they have been diagnosed with any of the 22 conditions listed in the diseaseMap table at any time point. You will need to consider all three ICD columns in the outpatientVisit file (not just one). Create a table with the rate of disease for each condition for men, women, and all. It should look like this, where the XX% is the percent with the condition:
+
+```{r}
+OutpatientVisit = melt(
+  OutpatientVisit, 
+  measure.vars = patterns("^ICD10"), 
+  id.vars = c("VisitID", "PatientID"), 
+  value.name = "ICD10"
+)
+
+Npatients = nrow(Patient)
+
+q2 = DiseaseMap[
+  OutpatientVisit, on = "ICD10"
+  ][, .N, by = .(PatientID, Condition)][Patient, on = "PatientID"]
+
+q2[
+  ,.(condition_N = .N), by = .(Condition, Gender)
+  ][,condition_percent := paste0(condition_N*100/nrow(Patient), "%")][
+    order(Condition, Gender)]
+```
+
+**I assume the denominator here is the number of patients : `r nrow(Patient)`**
+
+3) Calculate the mortality rate for every year between 2005 and 2018. Is it generally increasing, or decreasing? Assume patients are only at risk of death as of their first visit (in the outpatient Visit file). Once they have died, they are no longer at risk in subsequent years
+
+```{r}
+q3 = Mortality[Patient, on = "PatientID"]
+q3[, year := as.integer(substr(DateOfDeath, 1, 4))]
+q3 = q3[, .(N_death = .N), by = year][order(year)][!is.na(year)]
+
+q3[, cum_death := cumsum(N_death)
+  ][, atrisk := 20000 - shift(cum_death, fill = 0, type = "lag")
+    ][, mortality_rate := N_death*100/atrisk]
+
+q3
+```
+
+```{r}
+require(ggplot2)
+ggplot(q3, aes(year, mortality_rate)) + 
+  geom_point() + geom_line() + 
+  scale_x_continuous("year", labels = 2005:2018, breaks = 2005:2018) +
+  labs(title = "Mortality rate (%) changes from 2005 to 2018") +
+  ylab("Mortality rate (%)") + theme_test()
+```
+
+**According to the time trend plot, the mortality rate has been generally increasing, while it experienced a major drop in the recent two years (2017 and 2018).**
+
+  a. This is a harder question to answer than at first glance. What should the denominator of patients be for every year? How will you calculate it?
+  
+ **From my understanding, the denominator should be the patients at risk in the specific year (who were still alive). I calculated it by excluding the patients till the last year.**

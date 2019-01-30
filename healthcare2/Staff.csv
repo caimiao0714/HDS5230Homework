@@ -1,0 +1,51 @@
+"StaffID","FirstName","LastName","Gender","HireDate","HourlyRate","Salary","PayType","StaffType","StaffReportsTo"
+1,"Frank","Chandler","male",2001-11-14,,112703,"Salary","Clinic Manager",
+2,"Lillian","Boling","female",2011-08-31,,109793,"Salary","Clinic Manager",
+3,"Leslie","Sledge","male",2012-04-06,,1,"Salary","Nurse",44
+4,"Ruben","Farmer","male",2004-04-05,,999999,"Salary","Physician",2
+5,"Cynthia","Morin","female",2007-02-03,,185166,"Salary","Physician",1
+6,"Linda","Ward","female",2013-04-09,,44990,"Salary","Nurse",7
+7,"Steve","Green","male",2010-12-23,,149078,"Salary","Physician",1
+8,"Courtney","Rivera","female",2009-02-20,,196510,"Salary","Physician",1
+9,"Jessica","Pagan","female",2007-04-13,,63776,"Salary","Nurse",49
+10,"Christina","Enyeart","female",2010-06-29,17,,"Hourly","Nurse",20
+11,"Christopher","Scheffler","male",2012-07-24,16,,"Hourly","Nurse",4
+12,"Fernando","Printz","male",2007-02-24,15,,"Hourly","Nurse",7
+13,"Amber","Anderson","female",2009-12-18,,176515,"Salary","Physician",1
+14,"Betsey","Gerson","female",2011-07-25,,63868,"Salary","Physician Assistant",4
+15,"Mary","Caplan","female",2012-05-30,,60319,"Salary","Nurse",27
+16,"David","Shuford","male",2012-11-11,,118872,"Salary","Physician",2
+17,"Anna","Lister","female",2005-09-13,,144035,"Salary","Physician",2
+18,"Robert","Heck","male",2014-01-01,,55770,"Salary","Nurse",49
+19,"Eva","Nelson","female",2012-01-29,15,,"Hourly","Nurse",44
+20,"James","Means","male",2009-02-05,,146763,"Salary","Physician",2
+21,"Janelle","Manning","female",2005-10-26,14,,"Hourly","Nurse",27
+22,"Jill","Magnuson","female",2013-04-30,,49900,"Salary","Nurse",17
+23,"Melanie","Rivera","female",2009-11-23,,43946,"Salary","Nurse",40
+24,"Patty","Smith","female",2010-12-11,15,,"Hourly","Nurse",32
+25,"Frank","Chaparro","male",2011-09-10,14,,"Hourly","Nurse",31
+26,"Shari","Musser","female",2014-09-02,,98651,"Salary","Nurse",5
+27,"Wm","Britt","male",1995-10-18,,151633,"Salary","Physician",2
+28,"Mary","Hitz","female",2013-09-30,,68975,"Salary","Physician Assistant",27
+29,"Rosemary","Gardner","female",2013-02-28,14,,"Hourly","Nurse",4
+30,"Robert","Citizen","male",2012-06-01,19,,"Hourly","Physician Assistant",32
+31,"Morris","Krause","male",2013-05-31,,130643,"Salary","Physician",1
+32,"Joyce","Bryant","female",2012-04-06,,155519,"Salary","Physician",1
+33,"Ginette","Santos","female",2013-04-11,,65169,"Salary","Nurse",27
+34,"Mamie","Bonnell","female",2010-12-12,,56546,"Salary","Nurse",27
+35,"Audrey","Mohamed","female",2009-03-28,14,,"Hourly","Nurse",44
+36,"Matthew","Castrejon","male",2014-05-18,,35859,"Salary","Nurse",49
+37,"Christina","Sargent","female",2005-03-10,20,,"Hourly","Physician Assistant",17
+38,"Christina","Theberge","female",2001-04-09,,70215,"Salary","Physician Assistant",20
+39,"William","Booth","male",2011-03-27,16,,"Hourly","Nurse",27
+40,"Wayne","Rouse","male",2010-10-14,,232412,"Salary","Physician",1
+41,"James","Kong","male",2012-10-05,,59124,"Salary","Nurse",27
+42,"Ingrid","Escobedo","female",2014-01-09,,43632,"Salary","Nurse",40
+43,"Gladys","Morales","female",2013-08-11,,172853,"Salary","Physician",1
+44,"Dave","Barry","male",2007-08-07,,151336,"Salary","Physician",1
+45,"Delois","Beaulieu","female",2011-01-24,,27608,"Salary","Nurse",50
+46,"Virgie","Kim","female",2005-01-20,20,,"Hourly","Physician Assistant",13
+47,"Casey","Billingsley","male",2011-11-08,,74797,"Salary","Nurse",32
+48,"John","Kellogg","male",2012-05-03,,47268,"Salary","Nurse",32
+49,"Natalie","Wolf","female",2008-08-14,,150056,"Salary","Physician",1
+50,"Ruby","Lewis","female",2004-10-02,,118030,"Salary","Physician",1
