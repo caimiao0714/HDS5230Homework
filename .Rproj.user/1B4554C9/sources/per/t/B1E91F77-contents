@@ -94,4 +94,4 @@ ggplot(q3, aes(year, mortality_rate)) +
 
   a. This is a harder question to answer than at first glance. What should the denominator of patients be for every year? How will you calculate it?
   
- **From my understanding, the denominator should be the patients at risk in the specific year (who were still alive). I calculated it by excluding the patients till the last year.**
+ **From my understanding, the denominator should be the patients at risk in the specific year (who were still alive). I calculated it by excluding the patients who died in the last year.**
