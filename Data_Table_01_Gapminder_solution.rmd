@@ -1,0 +1,161 @@
+---
+title: "Data Table Gapminder Assignment"
+author: "Evan Carey"
+date: "February 7, 2019"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1) Load data
+
+First we load and examine the dataset, and turn it into a data.table. 
+
+```{r}
+## install/load data
+if (!require(gapminder)) install.packages('gapminder')
+require(gapminder)
+data(gapminder)
+## turn into data.table
+require(data.table)
+gapminder_dt <- data.table(gapminder)
+## clean up to save space
+rm(gapminder)
+gc()
+```
+
+# I and J subsets
+
+```{r}
+## First 30 rows
+gapminder_dt[1:30]
+## year is 1952
+gapminder_dt[year == 1952]
+## Africa continent
+gapminder_dt[continent == 'Africa']
+## 2007 with country and lifeExp column
+gapminder_dt[year == 2007,
+             list(country, lifeExp)]
+```
+
+# Number 3
+
+## A
+
+```{r}
+# Which 5 countries have the highest population in 1952? 
+gapminder_dt[year == 1952][order(pop)][,tail(.SD)]
+# What about 1987? 
+gapminder_dt[year == 1987][order(pop)][,tail(.SD)]
+# What about 2007?
+gapminder_dt[year == 2007][order(pop)][,tail(.SD)]
+```
+
+## B
+
+```{r}
+# Which 5 countries have the lowest population in 1952? 
+gapminder_dt[year == 1952][order(pop)][,head(.SD)]
+# What about 1987? 
+gapminder_dt[year == 1987][order(pop)][,head(.SD)]
+# What about 2007?
+gapminder_dt[year == 2007][order(pop)][,head(.SD)]
+```
+
+## C
+
+```{r}
+# Which 5 countries have the highest life expectancy in 1952? 
+gapminder_dt[year == 1952][order(lifeExp)][,tail(.SD)]
+# What about 1987? 
+gapminder_dt[year == 1987][order(lifeExp)][,tail(.SD)]
+# What about 2007?
+gapminder_dt[year == 2007][order(lifeExp)][,tail(.SD)]
+```
+
+## D
+
+```{r}
+# Which 5 countries have the highest life expectancy in 1952? 
+gapminder_dt[year == 1952][order(lifeExp)][,head(.SD)]
+# What about 1987? 
+gapminder_dt[year == 1987][order(lifeExp)][,head(.SD)]
+# What about 2007?
+gapminder_dt[year == 2007][order(lifeExp)][,head(.SD)]
+```
+
+## E
+
+```{r}
+# Calculate the average life expectancy by country across all years for only countries in Asia. 
+# Which Country in Asia has the highest and lowest average life expectancy?
+gapminder_dt[continent == 'Asia',
+             list(mean_life_exp=mean(lifeExp)),
+             by=country][order(mean_life_exp)][c(1,.N)]
+```
+
+## F
+
+```{r}
+# Create a new column that is pop*gdpPercap. Which countries have the highest value for this column?
+gapminder_dt[,pop_gdp := pop * gdpPercap]
+gapminder_dt[order(pop_gdp)][,tail(.SD)]
+```
+
+# 4
+
+What is the correlation between gdpPercap and Life expectancy? Using your data.table object, call the correlation function from the j argument (instead of doing it the 'base' R way).
+
+```{r}
+## either way works
+gapminder_dt[,cor(gdpPercap,lifeExp)]
+## include test statistics
+gapminder_dt[,cor.test(gdpPercap,lifeExp)]
+```
+
+# 5
+
+I want you to create a linear model estimating the slope between year and lifeExp for each country individually, then extract the slopes/country names and save the resulting table. This resulting table should have one row for every country, with two variables (country and slope). It may be helpful to start by just fitting a model for the whole dataset and figuring out how to extract the slope from that model.
+
+```{r}
+## linear model for everyone
+mod_result <- 
+  gapminder_dt[,lm(lifeExp ~ year)]
+## extract coefficients
+coef(mod_result)
+## extract year slope
+coef(mod_result)['year']
+
+## visualize this model
+library(ggplot2)
+ggplot(gapminder_dt,aes(year, lifeExp)) + 
+  geom_point() + 
+  geom_smooth(method = 'lm')
+
+## Fit linear model for all, extract slope
+gapminder_dt[,coef(lm(lifeExp ~ year))['year']]
+# do it by country
+year_slope_dt <-
+  gapminder_dt[,list(year_slope=coef(lm(lifeExp ~ year))['year']),
+               by=country]
+```
+
+
+## a
+
+```{r}
+# Which 5 countries have the highest average increase in life expectancy over time (biggest slope)
+year_slope_dt[order(year_slope)][,tail(.SD)]
+```
+
+## b
+
+```{r}
+# Which 5 countries have the lowest average increase in life expectancy over time (smallest slope)
+year_slope_dt[order(year_slope)][,head(.SD)]
+```
