@@ -24,10 +24,10 @@ library(data.table)
 ## import needed data
 ## patient data with gender
 patients <- 
-  fread('../data/healthcare2/Patient.csv')
+  fread('healthcare2/Patient.csv')
 ## mortality table
 mortality <- 
-  fread('../data/healthcare2/Mortality.csv')
+  fread('healthcare2/Mortality.csv')
 ```
 
 Let's first explore the patient and gender data.
@@ -105,7 +105,7 @@ Let's start with identifying the cohort of patients with at least one outpatient
 ```{r}
 ## visits
 outpat <- 
-  fread('../data/healthcare2/OutpatientVisit.csv')
+  fread('healthcare2/OutpatientVisit.csv')
 ## check it out
 head(outpat)
 describe(outpat)
@@ -145,7 +145,7 @@ Ok, now we have identified our population at risk...how can we add in the variou
 ```{r}
 ## disease_map
 disease_map <- 
-  fread('../data/healthcare2/DiseaseMap.csv')
+  fread('healthcare2/DiseaseMap.csv')
 ## check the number of conditions
 disease_map[,uniqueN(Condition)] 
 ```
@@ -311,6 +311,13 @@ patient_years[at_risk == 'yes',
                    n_dead = sum(dead),
                    mortality_rate=mean(dead)),
               keyby=Years]  ## keyby sorts it by years
+
+patient_years[at_risk == 'yes',
+              list(n_unique_patients = uniqueN(PatientID),
+                   n_at_risk = .N,
+                   n_dead = sum(dead),
+                   mortality_rate=mean(dead)),
+              by=Years] 
 ```
 
 It is comforting to see that the number of patients at risk is equal to the number of unique patients every year, otherwise we would be double counting someone!
