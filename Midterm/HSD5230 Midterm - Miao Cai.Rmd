@@ -279,6 +279,13 @@ This is NOT an ‘embarrassingly parallel’ calculation since we need to pool t
 \end{minipage}}
 **
 
+(a)	1: 8 bits
+(a)	5: 8 bits
+(a)	55: 8 bits
+(a)	243: 8 bits
+(a)	290: 16 bits
+(a)	1025: 16 bits
+(a)	67000: 32 bits
 
 
 
@@ -297,6 +304,10 @@ This is NOT an ‘embarrassingly parallel’ calculation since we need to pool t
 \end{minipage}}
 **
 
+(a)	15: one byte
+(a)	265: 2 bytes
+(a)	67000: 4 bytes
+(a)	4294967298: 8 bytes
 
 
 \vspace{18pt}
@@ -306,7 +317,7 @@ This is NOT an ‘embarrassingly parallel’ calculation since we need to pool t
 \end{minipage}}
 **
 
-
+No, it does not work since int8 has both positive and negative numbers and 1 to 200 is not within the range of -128 to 127.
 
 
 
@@ -317,7 +328,7 @@ This is NOT an ‘embarrassingly parallel’ calculation since we need to pool t
 \end{minipage}}
 **
 
-
+Yes, it works since uint8 can be up to 2*8 = `r 2^8` and 1-200 is within the range.
 
 
 
