@@ -15,7 +15,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 2)	What is the difference between inferential modeling approaches versus predictive modeling approaches? Come up with a clarifying example for each modeling approach (one inferential, one predictive).
 
+Inferential modelling focuses on parameter estimation while predictive modelling focuses on the accuracy of prediction.
+
 3)	Is machine learning superior to traditional approaches to statistical inference? When would you use machine learning versus traditional approaches to statistics? Give specific reasons to support your answer.
+
+In my opinion, machine learning and traditional statistical inference are two streams of data science, and there are no superior in the current era.
+
 
 4)	Define the term ‘data leakage’ in the context of health care analytics (predictive models specifically). What are the symptoms of data leakage?
 
