@@ -1,9 +1,0 @@
-base
-dplyr
-data.table
-sp
-rgdal
-geosphere
-foreach
-iterators
-GA
