@@ -1,0 +1,403 @@
+---
+title: "Discrete Optimization"
+author: "Evan Carey"
+date: "March 7, 2019"
+output: 
+  # html_document:
+  #   toc: true
+  #   toc_float: true
+  pdf_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction 
+
+In this assignment, you will solve a discrete optimization problem in the context of allocating healthcare resources in the state of MO. Let's assume there are a set of clinics in the state of MO that currently do not have specialty mental health care. Out of all these clinics, you must pick 5 clinics to implement specialty mental health care. How can you go about picking which 5 clinics (out of the larger set of clinics) is the 'best' 5 ? 
+
+If you know the home locations of a patient population, and you also know the locations of a bunch of clinics, can you choose which set of clinics to expand resources to in order to maximally expand access to care? 
+
+# Data Overview
+
+I have simulated fake home locations for ~6 million Missouri residents and provided their latitude and longitude. I have also included an Urban / Rural designation for each person. This file is called `Mo_pop_Sim.csv`. 
+
+Additionally, I have provided the location of all federally qualified health centers in MO (FQHC) as a shape file: MO_2018_Federally_Qualified_Health_Center_Locations
+
+# Code Demo and Questions:
+
+## Overview
+
+I will start by demonstrating different coding approaches. I have embedded questions below, you will need to slightly modify my coding approaches to answer the questions that are presented inline. 
+
+## Data import:
+
+First, we must import the datasets of interest. For the MO residents, I will take a small random sample to make the math easier on our computers. Also, I will convert the shape file to a data.table object. 
+
+```{r}
+library(data.table)
+library(rgdal)
+
+#### Import Simulated MO residents ####
+
+## includes urban/rural designation
+MO_residents <- 
+  fread('C:/Users/evancarey/Dropbox/Work/SLU/health_data/missouri_spatial/MO_people_sim/Mo_pop_Sim.csv')
+
+## take small random sample (1%)
+set.seed(32)
+MO_residents_sample <- 
+  MO_residents[sample(.N,size = .N*.01)]
+MO_residents_sample
+
+#### Import Missouri FQHC locations ####
+data_path <- 'C:/Users/evancarey/Dropbox/Work/SLU/health_data/missouri_spatial/MO_2018_Federally_Qualified_Health_Center_Locations'
+MO_FQHC <-
+  readOGR(data_path,
+          'MO_2018_Federally_Qualified_Health_Center_Locations')
+
+## create data.table for later use
+MO_FQHC_df <- 
+  data.table(as.data.frame(MO_FQHC))[,list(OBJECTID, Latitude,Longitude)]
+MO_FQHC_df
+```
+
+## Simple case: 8 total clinics, pick 4
+
+Let's first simplify the problem by considering only 8 total clinics, then picking 4 of the 8 clinics to expand services to. We will use the small sample of MO residents as well. 
+
+If we have 8 total sites, and we want to pick 4 out of the 8 to expand services, how many total options are there? This is  a permutation where order does not matter. This is often called the 'binomial coefficient', with 'n choose k'. Check the wiki page for more info if you are unfamiliar with this: https://en.wikipedia.org/wiki/Binomial_coefficient
+
+R has a function called `choose()` that will calculate this for us:
+
+
+```{r}
+choose(8,4) # 70 possible solutions. We can calculate all of these
+```
+
+There are 70 possible solutions to our problem. With so few possible solutions, we can actually just do a brute force calculation here (calculate every possible solution). We will do that in a moment. 
+
+Let's grab 8 random sites from our full list of 194 sites for now. We will pretend we only have 8 sites for the first part of this assignment:
+
+```{r}
+## Grab 8 random sites
+set.seed(32)
+MO_FQHC_df_8 <- MO_FQHC_df[sample(8)]
+```
+
+If we have 8 total sites, and we want to pick 4 out of the 8 sites, what does one 'solution' to the problem look like? It would simpy be picking 4 out of the 8 sites! So how can we generate a matrix of all possible solutions, where each row in the matrix is a single solution? in this case, we can use the `combn()` function. First I will test the code using a small test set:
+
+```{r}
+## A solution is picking any 4 of these 8 sites (order doesn't matter)
+## We can generate all possible solutions using the combn function
+t(combn(x=1:4,m = 2)) # each row is a permuation
+choose(4,2) # as expected, 6
+```
+
+Now let's implement it on the our 8 choose 4 sites:
+
+```{r}
+## generate all possible solutions
+possible_solutions <-
+  MO_FQHC_df_8[,t(combn(x = as.character(OBJECTID),
+                        m = 4))]
+head(possible_solutions)
+```
+
+Now that we have all 70 solutions, how do we evaluate how good each solution is? If we consider access to care to be a function of how far someone lives from a clinic, we might decide to minimize the mean distance to the nearest clinic. We could also decide to maximize the number of people who live within 30 miles of a clinic, or something else. For either of those options, our first step is to calculate how far each person lives from each clinic. I have chosen to create a cartesian product of every patient / clinic combination, then store it in a long format:
+
+```{r}
+## how good is each solution? Depends on our definition of good. 
+## need to define and calculate an objective function (cost function)
+## First we calculate the geodesic distance between each Patient and each clinic
+## create a data.table of every clinic/patient pair:
+## generate ID's for the residents
+MO_residents_sample[,pat_ID:=1:.N]
+## create a cartesian product with all combinations
+pat_clinic_combinations <-
+  CJ(OBJECTID=as.character(MO_FQHC_df_8$OBJECTID),
+     pat_ID=MO_residents_sample$pat_ID)
+## merge in the lat and long for clinics
+setkey(pat_clinic_combinations,OBJECTID)
+setkey(MO_FQHC_df_8,OBJECTID)
+pat_clinic_combinations[MO_FQHC_df_8,':='(Latitude_clinic=Latitude,
+                                          Longitude_clinic=Longitude)]
+## merge in the lat and long for patients
+setkey(pat_clinic_combinations,pat_ID)
+setkey(MO_residents_sample,pat_ID)
+pat_clinic_combinations[MO_residents_sample,':='(Latitude_patient=lat,
+                                                 Longitude_patient=long)]
+```
+
+Now that I have this pair-wise list, I can calculate the distance between every patient / clinic pair:
+
+```{r}
+## now use geosphere::distGeo to calculate the distance
+library(geosphere)
+?distGeo()
+pat_clinic_combinations[,distancemiles := distGeo(matrix(c(Longitude_clinic,
+                                                           Latitude_clinic),
+                                                         ncol=2),
+                                                  matrix(c(Longitude_patient,
+                                                           Latitude_patient),
+                                                         ncol=2))/1609.344]
+## now we have all the distances from each patient home to each clinic.
+```
+
+Now that we have the distances, we are ready to write our objective function. The objective function is simply a function that calculate how good a given solution to our problem is. Recall that a single solution is simply a list of 4 sites (out of the 8 sites) that we will choose for care expansion. As a first step, we will consider the objective function to be the average distance from every patient's home to the closest clinic. 
+
+```{r}
+## Let's write an objective function that will evaluate the cost for
+## a potential solution
+## it should take in as arguments: (1) the solution and (2) the distance matrix
+## first we will hard code it, then turn into function.
+## here is a sample solution
+possible_solutions[1,]
+## calculate the minimum distance by patientID (closest clinic)
+## then take the average
+setkey(pat_clinic_combinations,OBJECTID)
+pat_clinic_combinations[J(possible_solutions[1,]),
+                        list(min_dist=min(distancemiles)),
+                        by=pat_ID][,mean(min_dist)]
+```
+
+Now that I have the code working for a single solution, let's turn it into a function:
+
+```{r}
+## Turn the code from above into a function
+obj_func_min_mean <-
+  function(solution,distMat) {
+    setkey(distMat,OBJECTID)
+    distMat[J(solution),
+            list(min_dist=min(distancemiles)),
+            by=pat_ID][,mean(min_dist)]
+  }
+```
+
+And now we can test that function:
+
+```{r}
+## function for first solution
+obj_func_min_mean(solution = possible_solutions[1,],
+                  distMat = pat_clinic_combinations)
+## function for second solution
+obj_func_min_mean(solution = possible_solutions[2,],
+                  distMat = pat_clinic_combinations)
+```
+
+Now that it works, we can apply it to every single possible solution then find the smallest distance. This is considered the 'brute force' approach - calculate every possibility, then take the 'best' possibility. 
+
+```{r}
+## apply to all solutions
+dist_temp_8 <- 
+  apply(possible_solutions,
+        MARGIN = 1,
+        obj_func_min_mean,
+        distMat = pat_clinic_combinations)
+## create dataframe of results
+temp_results_8 <- 
+  data.table(dist_temp_8,possible_solutions)
+temp_results_8
+## find minimum (brute force complete)
+temp_results_8[min(dist_temp_8) == dist_temp_8]
+```
+
+## Implement a genetic algorithm
+
+Instead of a brute force approach, now we can implement a genetic algorithm to optimize the placement of 4 new programs out of the 8 programs (our example from above). Since we know the right answer from our brute force approach above, we can verify the genetic algorithm works as expected. 
+
+
+I will use the GA package to implement the genetic algorithm. This package has the ability to maximize instead of minimize, so if I want a minimal solution, I must define a new function that is the inverse of the objective function.
+
+Another wrinkle to this approach is the 'solution' the GA is providing is simply a reordered vector with a lower and upper bound defined (when we say `type = "permutation"`). That worked well in our 'traveling salesman' problem, where we were interested in the order of all sites. In this case, we are not interested in reording all the sites - instead, we are interested in picking 4 of the sites (out of the 8). One way to accomplish this is to make the objective function take in a 'solution' which is all 8 sites in a random order, then only use the first 4 sites in our calculation of distances. I have hard coded that into the function below using the `k` argument:
+
+```{r}
+## Implement genetic algorithm
+library(GA)
+## make inverse to maximize
+## Alter the objective function a bit so it works with ga()
+## I rewrote this function so it only uses the first 4 sites of the 'solution'
+## the 'solution' is all every site in a random order. 
+obj_func_min_mean2 <-
+  function(solution,distMat,k) {
+    setkey(distMat,OBJECTID)
+    distMat[J(distMat[,unique(OBJECTID)[solution[1:k]]]), ## here is where I subset to only 4 sites
+            list(min_dist=min(distancemiles)),
+            by=pat_ID][,mean(min_dist)]
+  }
+## make the inverse function so the maximum is the minimum...
+Fitness_f <- 
+  function(solution,...) 1/obj_func_min_mean2(solution, ...)
+```
+
+Now we can run the genetic algorithm:
+
+```{r}
+## Run the genetic algorithm
+## it is picking a 'solution' which is a random combination of all sites
+## I coded is to only use the first 'k' of those sites in the function above
+GA <- ga(type = "permutation", fitness = Fitness_f, 
+         distMat = pat_clinic_combinations, k=4,
+         lower = 1, upper = 8, # these are the boundaries of the solution space (number of sites)
+         popSize = 10, # total number of solutions per generation
+         maxiter = 1000,  # max number of generations
+         run = 20, # if we get the same best answer 20 times in a row, stop
+         pmutation = 0.2) # this is the mutation rate per generation
+## did it find the optimal solution?
+summary(GA)
+plot(GA)
+GA@solution # first 4 are the ones we choose
+1/GA@fitnessValue
+## It found the 'best' answer, which is an average distance of 42.00713
+```
+
+The genetic algorithm found the max solution!
+
+## Extend this code (questions for you to complete):
+
+Using the above code as a template, implement the following objective functions. Use both the brute force approach and the genetic algorithm to 'solve' the problem.
+
+1.  Change the objective function to minimize the median distance instead of the mean distance. Do you get a different optimal solution than when I used the mean?
+
+2. Change the objective function to maximize the number of patients that live within 40 miles of a clinic. Do you get a different optimal solution than the median or mean? 
+
+3. In the prior 2 questions, we have not worried about the differences between urban and rural patients (they essentially had equal weights in our objective function). Now, I want you to make the rural patients 'worth more' in the objective function. You could simply exclude all the urban patients from the data and only consider the rural patients;  But I still want you to consider the urban patients in the objective equation, I just want them to be worth 'less' than the rural patients. Use your answer from number two to construct a reasonable objective function for the following: 'Maximize the number of patients that live within 40 miles of a clinic. Rural patients should be worth 5 times as much as urban patients.' Does this give you a different answer than you got in number 2? 
+
+## Extending this to all 197 sites, choosing 10 for care expansion
+
+Now we will expand this code to look at all 197 sites (instead of just 8), and we will pick 10 of these sites (instead of 4). 
+
+*Note - if you get memory errors when you try to run this, you can use a random sample of 100 sites instead of all 197 sites. Email me if you have issues*
+
+**Question to answer: How many potential solutions are there to this problem?**
+
+```{r}
+## What about using the full list of 197 clinics and choosing 10?
+total_sites <-
+  197
+chosen_sites <- 
+  10 
+## use the choose function to calculate total number of solutions:
+
+```
+
+Since we are considering all 197 sites, we need to calculate a new distance matrix from every patient home to every clinic site. I will follow the same approach I used above, creating a 'long' form of this table:
+
+```{r}
+## We need to construct the full distance matrix of each patient to all 197 hospitals:
+## create a data.table of every clinic/patient pair using the sample of patients 
+## (not the full 6 million!):
+MO_residents_sample[,pat_ID:=1:.N]
+pat_clinic_combinations2 <-
+  CJ(OBJECTID=as.character(MO_FQHC_df$OBJECTID),
+     pat_ID=MO_residents_sample$pat_ID) ## use the sample, not the full list!
+```
+
+**What if we used the full `MO_Residents` file instead of just our sample? How large would the distance table be?**
+
+```{r}
+## Calculate the size of the distance table for all MO patients instead of just the sample
+## note you can't create the table, its too big.
+## Just use the number of rows in each table to calculate the size of the final table. 
+
+
+```
+
+That is a big table, too big to calculate on one PC. So we will just use the sample of patients. I will merge in the latitudes and longitudes, then calculate the distance:
+
+```{r}
+## look up lat and long for each one
+setkey(pat_clinic_combinations2,OBJECTID)
+setkey(MO_FQHC_df,OBJECTID)
+pat_clinic_combinations2[MO_FQHC_df,':='(Latitude_clinic=Latitude,
+                                        Longitude_clinic=Longitude)]
+setkey(pat_clinic_combinations2,pat_ID)
+setkey(MO_residents_sample,pat_ID)
+pat_clinic_combinations2[MO_residents_sample,':='(Latitude_patient=lat,
+                                                 Longitude_patient=long)]
+## calculate distances
+pat_clinic_combinations2[,distancemiles := distGeo(matrix(c(Longitude_clinic,
+                                                           Latitude_clinic),
+                                                         ncol=2),
+                                                  matrix(c(Longitude_patient,
+                                                           Latitude_patient),
+                                                         ncol=2))/1609.344]
+```
+
+Now we will use the same objective function as we used above to minimize the mean distance to the closest clinic across all patients. 
+
+```{r}
+## use this same objective function
+obj_func_min_mean2 <-
+  function(solution,distMat,k) {
+    setkey(distMat,OBJECTID)
+    distMat[J(distMat[,unique(OBJECTID)[solution[1:k]]]),
+            list(min_dist=min(distancemiles)),
+            by=pat_ID][,mean(min_dist)]
+  }
+Fitness_f <- 
+  function(solution,...) 1/obj_func_min_mean2(solution,...)
+```
+
+We can test that this works on a single solution by simply generating a vector from 1 to 197, which will pick only the first 10 sites:
+
+```{r}
+## test it works on one possible solution:
+obj_func_min_mean2(1:197,
+                   distMat=pat_clinic_combinations2,
+                   k=10)
+Fitness_f(1:197,
+          distMat=pat_clinic_combinations2,
+          k=10)
+```
+
+Can we find a better solution? We can't do brute force, there are too many possible solutions. But perhaps we can just randomly generate solutions and test them...here I randomly find 15 permutations of the numbers 1 to 197, then I test those solutions:
+
+```{r}
+set.seed(23)
+## test it on 15 random solutions:
+mat_1 <- 
+  t(sapply(1:15, # number of replicates
+           function(x) sample(197,197)))
+str(mat_1) # this is a matrix of solutions, each row is a solution
+## score them all by applying the objective function by row
+res1 <- apply(mat_1,
+              1,
+              obj_func_min_mean2,
+              distMat=pat_clinic_combinations2,
+              k=10)
+## find the best one
+min(res1)
+mat_1[which(res1 == min(res1)),][1:10] 
+```
+
+This gives me a solution with an average distance of 27.286
+
+Rerun this 5 more times (with 10 random solutions per time) without a seed. What is the best solution you can come up with? What is the average distance for your best solution?
+
+### Run the Genetic Algorithm on this:
+
+Now we will run a genetic algorithm on this full set of 197 sites and the random sample of patients. We can use the same approach we used above:
+
+```{r}
+## Run the genetic algorithm
+## it is picking a 'solution' which is a random combination of all sites
+## I coded is to only use the first 'k' of those sites in the function above
+GA2 <- ga(type = "permutation", fitness = Fitness_f, 
+         distMat = pat_clinic_combinations2, k=chosen_sites,
+         lower = 1, upper = total_sites,
+         elitism = 5, # this is how many top solution to keep every generation
+         popSize = 50, # this is the number of solutions per generation
+         maxiter = 1000, 
+         run = 50, 
+         pmutation = 0.3)
+## Check your final solution, did it work well? 
+summary(GA2)
+plot(GA2)
+GA2@solution # first 10 are the ones we choose
+1/GA2@fitnessValue
+```
+
