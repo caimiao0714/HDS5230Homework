@@ -91,6 +91,6 @@ Reading: Machine learning basics from the Deep Learning book[https://www.deeplea
 ## Week 15 - ANN
 
 
-
-
+- Xiao C, Choi E, Sun J. Opportunities and challenges in developing deep learning models using electronic health records data: a systematic review. J Am Med Inform Assoc. 2018;25(10):1419-1428. doi: 10.1093/jamia/ocy068
+- https://www.deeplearningbook.org/contents/regularization.html
 
