@@ -34,7 +34,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 - The number of layers (functions) is defined as the **depth** of a neural network. The complexity of the hidden layer (functions) is defined as the **width** of a neural network.
-- We should start with a rough guess of the depth and width based on prior knowledge. Then try variations of the neural network and pick the best one based on the prediction performance (test error).
+- We should start with a rough guess of the depth and width based on prior knowledge. Then try variations of the neural network and pick the best one based on the prediction performance (validation set error).
 
 
 
@@ -56,9 +56,9 @@ knitr::opts_chunk$set(echo = TRUE)
 **
 
 
-- What is the final output from forward propagation?
-- What is the input?
-- Define forward propagation in lay terms.
+- The final output from forward propagation is the cost function $J(\theta)$.
+- The input is the data features $x$.
+- The forward propagration is flowing from data features $x$, through neural network, and to the outcome $y$ until it reaches a scalar cost function $J(\theta)$.
 
 
 
@@ -80,7 +80,8 @@ knitr::opts_chunk$set(echo = TRUE)
 \end{minipage}}
 **
 
-
+- The goal of backpropagation is to calculat the gradient of cost function, which flows from the cost function $J(\theta)$ back to the inputs $x$. In comparison, forward propagation is flowing from inputs $x$ to cost function $J(\theta)$.
+- Backpropagation is flowing from cost function $J(\theta)$, through neural networks, and back to inputs $x$ to calculate the gradients.
 
 
 
@@ -99,9 +100,17 @@ knitr::opts_chunk$set(echo = TRUE)
 \end{minipage}}
 **
 
+- linear function: 
+$$A(x) = xc$$
+which gives a range of activations. The problem is the gradient is a constant, and since different linear layers can be replaced by a single year, we lost the ability of stacking layers.
+- sigmoid function: 
+$$A(x) = \frac{1}{1 + e^{-x}}$$
+It has a non-linear form and smooth gradients, so it is a good activation function for a classifier. It also has the output ranged between 0 and 1, which will not be blown up. The problem with sigmoid function is that the gradient at the far side (both left and right) is very small, which causes the problem of "vanishing gradients".
+- ReLu: 
+$$A(x) = max(0, x)$$
+It gives an output $x$ if $x$ is positive and 0 otherwise. It has sparse activation which is not so costly compared with the sigmoid function. The problem is that the gradient will be 0 when $x$ is nagative, and the state will stop responding to variations in error or input, which is also known as the "dying ReLu problem".
 
-
-
+My solution is based on a great post by Avinash Sharma V at [https://medium.com/the-theory-of-everything/understanding-activation-functions-in-neural-networks-9491262884e0](https://medium.com/the-theory-of-everything/understanding-activation-functions-in-neural-networks-9491262884e0).
 
 
 
@@ -117,7 +126,7 @@ knitr::opts_chunk$set(echo = TRUE)
 \end{minipage}}
 **
 
-
+This is because the choice of activation function for the output depends on the type of the outputs. For example, if the output a classification, then the linear activation function is not a good choice since it is unbounded. When choosing the activation function for the output layer, we need to consider its data type.
 
 
 
@@ -134,7 +143,7 @@ knitr::opts_chunk$set(echo = TRUE)
 \end{minipage}}
 **
 
-
+No. In the worst case, an exponential number of hidden layers may be required. A feedforward network with a single layer is sufficient to represent any function, but the layer may be infeasibly large and may fail to learn and generalize correctly. Therefore, we generally use deeper models that can reduce the number of units required to represent the desired function and can reduce the amount of generalization error.
 
 
 
