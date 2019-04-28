@@ -33,6 +33,9 @@ knitr::opts_chunk$set(echo = TRUE)
 **
 
 
+- The number of layers (functions) is defined as the **depth** of a neural network. The complexity of the hidden layer (functions) is defined as the **width** of a neural network.
+- We should start with a rough guess of the depth and width based on prior knowledge. Then try variations of the neural network and pick the best one based on the prediction performance (test error).
+
 
 
 
@@ -53,6 +56,9 @@ knitr::opts_chunk$set(echo = TRUE)
 **
 
 
+- What is the final output from forward propagation?
+- What is the input?
+- Define forward propagation in lay terms.
 
 
 
