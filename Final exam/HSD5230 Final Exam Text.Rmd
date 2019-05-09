@@ -13,6 +13,7 @@ linkcolor: blue
 header-includes:
 - \usepackage{enumitem}
 - \usepackage{soul}
+#- \usepackage{setspace}\doublespacing
 - \newcommand{\benum}{\begin{enumerate}[label=(\alph*)]}
 - \newcommand{\ennum}{\end{enumerate}}
 ---
@@ -37,6 +38,26 @@ knitr::opts_chunk$set(echo = TRUE)
 \end{minipage}}
 **
 
+- The gradient is the how fast the cost function is changing, and the hessian is how fast is the change of the cost function is changing. Knowing the gradient or the hessian can help decide the learning rate and optimize the cost function. The gradient is equivalent to the first order derivative, while the hessian is the second order derivative.
+
+- In machine learning, the optimization is almost always related to high dimensional data with a lot of features, so the optimization is ususally very difficult due to  complex cost function and approximating the global minimum among multiple local minimum. In contrast, optimization in mathematics is more often related with much fewer features and simpler cost function. Traditional mathematics are trying to find the exact analytical solution.
+
+- A local minimum is where the gradient equals zero, but only the smallest value in a small range. A saddle point is where the gradient equals zero, but the gradients at the left and right side have the same sign (both positive or negative). The saddle point is problematic since it is neither a local minumum or global minimum, so the final optimization solution must not be a saddle point.
+
+- The general steps an optimization algorithm takes are:
+  
+  1. Start from an inital value,
+  2. Using the full or a small portion of data and calculate the gradient,
+  3. Take a step downhill in the correct direction based on the gradient,
+  4. Step size is a function of the gradient,
+  4. Repeat until convergence to a single point (until a tolerated value is reached).
+
+- Second order derivative methods (hessian-based methods) are generally more accurate and converge in fewer steps, but they are more resource intensive. In contrast, first order derivative methods (gradient-based methods) are less resource intensive but less accurate. If calculating the Hessian is easy and cheap, we should take the hessian-based methods.
+
+- The field typically used Newtonian optimization method on unregularized GLM models since it is one of the fastest converging method and it has nice matrix form properties. When the number of parameters are huge or the data have very steep or twisted curvature, the Hessian-based methods will become challenging since they are too expensive.
+
+- This is because deep learning models are ususally engaged with huge amounts of data, parameters, and hyperparameters. Typically gradient-based methods are not easy to implement (we have to turn to mini-batch gradient descent or stochastic gradient descent), let alone the Hessian-based methods.
+
 
 
 
@@ -60,6 +81,34 @@ knitr::opts_chunk$set(echo = TRUE)
 \end{minipage}}
 **
 
+- The overall goal of machine learning is to build a prediction model that has high generalizability to data in the future. Since we can't see data in the future, so usually we want to achieve low training error and low test error.
+
+- Training error is how well the machine learning model is fitted on the training data, while test error is how well the machine learning model based on the training data is fitted onto the test data, or more accurately, the expected value of the error on a new input. In practice, training and testing error are estimated by calcualting the mean square error (the difference between predicted results and true results).
+
+- Here are some different forms of cross-validation:
+
+  1. $k$-fold cross-valiadation: a partition of the dataset is formed by splitting it into $k$ non-overlapping subsets
+  2. leave-$p$-out cross-validation: using $p$ observations as the validation set and the remaining observations as the training set. This is repeated on all ways to cut the original sample on a validation set of $p$ observations and a training set.
+
+  $k$-fold cross-valiadation is a non-exhaustive cross-validation and it will not compute all ways of splitting the original sample, which is an approximation of leave-$p$-out cross-validation. Therefore, $k$-fold cross-valiadation is less computationally intensive but less accurate, while leave-$p$-out cross-validation is more accurate but more computationally intensive.
+  
+- Model capacity is its ability to fit a wide variety of functions. Models with low capacity may struggle to fit the training set. Models with high capacity can overfit by memorizing properties of the training set that do not serve them well on the test set. Model capacity should depend on training and testing error. An optimal model capacity should make training and testing error similarly high.
+
+- Regularization is any modification we make to a
+learning algorithm that is intended to reduce its generalization error but not its
+training error. There are two types of regularization techniques: L1 method and L2 method. 
+
+  L1 method is also known as LASSO, with the following penalty term adding to the loss function: $\lambda\sum_{j=1}^p|\beta_i|$. In contrast, L2 method is known as Ridge regression and a different penalty term is added to the loss function, $\lambda\sum_{j=1}^p\beta_i^2$.
+
+
+- Hyperparameters are used to control the behaviors of machine learning models, and their values are not adapted by the learning algorithm itself. In contrast, model parameters are adapted by the learning algorithm. We optimize model parameters by optimizing the loss function of the training set, while we optimize model hyperparameters by using a separate validation set. The model parameters in an elastic network are the $\beta$s associated with the features, while hyperparameter ranged between 0 and 1, which controls how much L1 or L2 regularization is used.
+
+- I would prefer a machine learning model in this case since a machine learning model usually has a better prediction accuracy than traditional inferential models. In this case, the manager is not  interested in specific predictor variables or how much that predictor is associated with no-risk model.
+
+- I would prefer a traditional inferential model since the physician is specifically intereted in the effect of a drug. An inferential model is better at explaining the association between two variables since the theories are simpler. It may also be easier to explain to physicians since they are most likely more familiar with traditional inferential models (GLMs).
+
+
+
 
 
 
@@ -78,6 +127,10 @@ data that is larger than memory
 \ennum
 \end{minipage}}
 **
+
+- Online learning or stochastic gradient methods use only a single row at a time to estimate the gradient and optmize the machine learning model. 
+
+- The gradient of the loss is estimated each sample at a time and the model is updated along the way with a decreasing strength schedule (aka learning rate).
 
 
 
