@@ -288,7 +288,21 @@ This is NOT an ‘embarrassingly parallel’ calculation since we need to pool t
 (a)	67000: 32 bits
 
 
+Correct answer:
 
+a.       1 (1)
+
+b.       5 (3)
+
+c.       55 (6)
+
+d.       243 (8)
+
+e.       290 (9)
+
+f.        1025 (11)
+
+g.       67000 (17)
 
 
 \vspace{18pt}
@@ -309,6 +323,15 @@ This is NOT an ‘embarrassingly parallel’ calculation since we need to pool t
 (a)	67000: 4 bytes
 (a)	4294967298: 8 bytes
 
+Correct answer:
+
+a.       15 (1)
+
+b.       265 (2)
+
+c.       67000 (3)
+
+d.       4294967298 (5)
 
 \vspace{18pt}
 **

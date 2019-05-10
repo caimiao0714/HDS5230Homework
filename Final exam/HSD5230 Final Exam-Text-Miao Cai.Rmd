@@ -25,38 +25,38 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **
 \fbox{\begin{minipage}{\linewidth}
-1. The gradient, the hessian, and optimization: Discuss the gradient and the hessian as they apply to optimization in machine learning. Be sure to address (at least) the following points in your discussion. Your answer should be at least a few paragraphs long, if not longer. If you use a source to support your answer, cite it.
+1. The gradient, the Hessian, and optimization: Discuss the gradient and the Hessian as they apply to optimization in machine learning. Be sure to address (at least) the following points in your discussion. Your answer should be at least a few paragraphs long, if not longer. If you use a source to support your answer, cite it.
 \benum
-\item Define the gradient and the hessian in your own words, as they apply to optimization in machine learning. How does this relate to first and second order derivatives?
+\item Define the gradient and the Hessian in your own words, as they apply to optimization in machine learning. How does this relate to first and second order derivatives?
 \item How does optimization in machine learning differ from classic function optimization in mathematics?
 \item What is a local minimum versus a global minimum? What is a saddle point? Why are these problematic in ML optimization?
 \item Summarize the general steps an optimization algorithm takes (Usually the computer does this for you, so you don’t code these steps)
-\item What are the tradeoffs in using gradient based optimization methods versus hessian based methods?
+\item What are the tradeoffs in using gradient based optimization methods versus Hessian based methods?
 \item Why has the field typically used Newtonian (2nd order derivative) optimization on unregularized GLM models? Under what specific circumstance do these second order methods become challenging to implement in practice? Why?
 \item Why do we tend to use first order methods like SGD or RMSProp in deep learning?
 \ennum
 \end{minipage}}
 **
 
-- The gradient is the how fast the cost function is changing, and the hessian is how fast is the change of the cost function is changing. Knowing the gradient or the hessian can help decide the learning rate and optimize the cost function. The gradient is equivalent to the first order derivative, while the hessian is the second order derivative.
+- The gradient is how fast the cost function is changing, and the Hessian is how fast is the change in the cost function is changing. Knowing the gradient or the Hessian can help decide the learning rate and optimize the cost function. The gradient is equivalent to the first order derivative, while the Hessian is the second order derivative.
 
-- In machine learning, the optimization is almost always related to high dimensional data with a lot of features, so the optimization is ususally very difficult due to  complex cost function and approximating the global minimum among multiple local minimum. In contrast, optimization in mathematics is more often related with much fewer features and simpler cost function. Traditional mathematics are trying to find the exact analytical solution.
+- In machine learning, the optimization is almost always related to high dimensional data with a lot of features, so the optimization is usually very difficult due to  complex cost function and approximating the global minimum among multiple local minima. In contrast, optimization in mathematics is more often related to much fewer features and simpler cost function. Traditional mathematics is trying to find the exact analytical solution.
 
 - A local minimum is where the gradient equals zero, but only the smallest value in a small range. A saddle point is where the gradient equals zero, but the gradients at the left and right side have the same sign (both positive or negative). The saddle point is problematic since it is neither a local minumum or global minimum, so the final optimization solution must not be a saddle point.
 
 - The general steps an optimization algorithm takes are:
   
-  1. Start from an inital value,
+  1. Start from an initial value,
   2. Using the full or a small portion of data and calculate the gradient,
   3. Take a step downhill in the correct direction based on the gradient,
   4. Step size is a function of the gradient,
   4. Repeat until convergence to a single point (until a tolerated value is reached).
 
-- Second order derivative methods (hessian-based methods) are generally more accurate and converge in fewer steps, but they are more resource intensive. In contrast, first order derivative methods (gradient-based methods) are less resource intensive but less accurate. If calculating the Hessian is easy and cheap, we should take the hessian-based methods.
+- Second-order derivative methods (Hessian-based methods) are generally more accurate and converge in fewer steps, but they are more resource intensive. In contrast, first-order derivative methods (gradient-based methods) are less resource intensive but less accurate. If calculating the Hessian is easy and cheap, we should take the Hessian-based methods.
 
 - The field typically used Newtonian optimization method on unregularized GLM models since it is one of the fastest converging method and it has nice matrix form properties. When the number of parameters are huge or the data have very steep or twisted curvature, the Hessian-based methods will become challenging since they are too expensive.
 
-- This is because deep learning models are ususally engaged with huge amounts of data, parameters, and hyperparameters. Typically gradient-based methods are not easy to implement (we have to turn to mini-batch gradient descent or stochastic gradient descent), let alone the Hessian-based methods.
+- This is because deep learning models are usually engaged with huge amounts of data, parameters, and hyperparameters. Typically gradient-based methods are not easy to implement (we have to turn to mini-batch gradient descent or stochastic gradient descent), let alone the Hessian-based methods.
 
 
 
@@ -83,14 +83,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 - The overall goal of machine learning is to build a prediction model that has high generalizability to data in the future. Since we can't see data in the future, so usually we want to achieve low training error and low test error.
 
-- Training error is how well the machine learning model is fitted on the training data, while test error is how well the machine learning model based on the training data is fitted onto the test data, or more accurately, the expected value of the error on a new input. In practice, training and testing error are estimated by calcualting the mean square error (the difference between predicted results and true results).
+- Training error is how well the machine learning model is fitted on the training data, while test error is how well the machine learning model based on the training data is fitted onto the test data, or more accurately, the expected value of the error on a new input. In practice, training and testing error are estimated by calculating the mean square error (the difference between predicted results and true results).
 
 - Here are some different forms of cross-validation:
 
-  1. $k$-fold cross-valiadation: a partition of the dataset is formed by splitting it into $k$ non-overlapping subsets
+  1. $k$-fold cross-validation: a partition of the dataset is formed by splitting it into $k$ non-overlapping subsets
   2. leave-$p$-out cross-validation: using $p$ observations as the validation set and the remaining observations as the training set. This is repeated on all ways to cut the original sample on a validation set of $p$ observations and a training set.
 
-  $k$-fold cross-valiadation is a non-exhaustive cross-validation and it will not compute all ways of splitting the original sample, which is an approximation of leave-$p$-out cross-validation. Therefore, $k$-fold cross-valiadation is less computationally intensive but less accurate, while leave-$p$-out cross-validation is more accurate but more computationally intensive.
+  $k$-fold cross-validation is a non-exhaustive cross-validation and it will not compute all ways of splitting the original sample, which is an approximation of leave-$p$-out cross-validation. Therefore, $k$-fold cross-validation is less computationally intensive but less accurate, while leave-$p$-out cross-validation is more accurate but more computationally intensive.
   
 - Model capacity is its ability to fit a wide variety of functions. Models with low capacity may struggle to fit the training set. Models with high capacity can overfit by memorizing properties of the training set that do not serve them well on the test set. Model capacity should depend on training and testing error. An optimal model capacity should make training and testing error similarly high.
 
@@ -105,7 +105,7 @@ training error. There are two types of regularization techniques: L1 method and 
 
 - I would prefer a machine learning model in this case since a machine learning model usually has a better prediction accuracy than traditional inferential models. In this case, the manager is not  interested in specific predictor variables or how much that predictor is associated with no-risk model.
 
-- I would prefer a traditional inferential model since the physician is specifically intereted in the effect of a drug. An inferential model is better at explaining the association between two variables since the theories are simpler. It may also be easier to explain to physicians since they are most likely more familiar with traditional inferential models (GLMs).
+- I would prefer a traditional inferential model since the physician is specifically interested in the effect of a drug. An inferential model is better at explaining the association between two variables since the theories are simpler. It may also be easier to explain to physicians since they are most likely more familiar with traditional inferential models (GLMs).
 
 
 
@@ -128,7 +128,7 @@ data that is larger than memory
 \end{minipage}}
 **
 
-- Online learning or stochastic gradient methods use only a single row at a time to estimate the gradient and optmize the machine learning model. 
+- Online learning or stochastic gradient methods use only a single row at a time to estimate the gradient and optimize the machine learning model. 
 
 - The gradient of the loss is estimated each sample at a time and the model is updated along the way with a decreasing strength schedule (aka learning rate).
 
@@ -150,7 +150,24 @@ thus far, what do you think the strengths and weaknesses are of using these fram
 \end{minipage}}
 **
 
+- Working with data larger than memory:
+  + scikit-learn: scikit-learn is fine for large data sets, but not as good as h2o and dask.
+  + spark: good at data management, not for machine learning with big data sets since it will spill excessive data onto disk, which will be much slower than in-memory methods.
+  + dask: very good at data larger than memory by using parallel scores or clusters.
+  + h2o: very good at dealing with data larger than memory.
 
+- No, we can't fit the same types of models in each framework, here are the available models in each framework:
+  + scikit-learn: classification, regression, clustering, dimentionality reduction, model selection, and preprocessing. See [scikit-learn official document](https://scikit-learn.org/stable/).
+  + spark: classification, regression, linear methods, decision trees, tree ensembles. See [Spark official documentation](https://spark.apache.org/docs/2.3.0/ml-classification-regression.html).
+  + dask: generalized linear models, clustering, XGBoost, and other regression metrics. See [dask-ml documentation](https://ml.dask.org/).
+  + h2o: supervised learning, XGBoost, unsupervised learning, generic models and others. See [H2O official documentation](http://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science.html#)
+
+
+- The available optimization methods in the four frameworks:
+  + scikit-learn: linear regression and Ridge use closed-form solution or stochastic gradient descent, LASSO and elastic net use coordinate descent, ARD regression and Bayesian Ridge use something like expectation-maximization algorithm, and HuberRegressor uses BFGS. (referred from [What optimization algorithms are used in scikit-learn? From StackExchange](https://datascience.stackexchange.com/questions/24907/what-optimization-algorithms-are-used-in-scikit-learn))
+  + spark: data serialization, memory tuning, memory management, determining memory consumption, and garbage collection tuning,
+  + dask: ADMM (Alternating Direction Method of Multipliers), gradient descent, L-BFGS, Newton's method (from [dask-ml document](https://ml.dask.org/glm.html#algorithms))
+  + h2o: Generalized ADMM Solver, L-BFGS, OLS, stochastic gradient descent (from this presentation: [High Performance Machine Learning in R with H2O](https://www.stat.berkeley.edu/~ledell/docs/h2o_hpccon_oct2015.pdf))
 
 
 
@@ -171,3 +188,9 @@ coming years? Why or why not? What tasks will deep learning succeed or fail at?
 \ennum
 \end{minipage}}
 **
+
+- Deep learning is a particular kind of machine learning that achieves great power and flexibility by learning to represent the world as a nested hierarchy of concepts, with each concept defined in relation to simpler concepts, and more abstract representations computed in terms of less abstract ones. Traditional machine learning methods such as elastic net and random forest need to be told how to make an accurate prediction by tuning hyperparameters, regularization. In contrast, deep learning is able to learn that through its own data processing. The similarity between machine learning and deep learning is that they both use complex models and optimization to try to make better predictions.
+
+- The fast growth of huge datasets, the increase of computational power and GPU contributed to the increase of attention in deep learning in the past eight years. 
+
+- I believe that deep learning will change data science in healthcare in the coming years. In the future, we would have better quality and huge amounts of data, more powerful computers, and better optimization algorithms to enable deep learning to make more accurate predictions. Deep learning will succeed in aspects that follow strong or similar patterns, such as diagnosis through images, but less successful in aspects that are less predictable, such as human emotion.
